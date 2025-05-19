@@ -1,10 +1,11 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserResponseDto } from 'src/user/dto/user-response.dto';
 
-export class LoginDto {
+export class AuthDto {
   @ApiProperty({
     description: 'User email',
-    example: 'user@example.com',
+    example: 'john.doe@example.com',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -12,15 +13,15 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'User password',
-    example: 'password123',
+    example: 'password',
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
   password: string;
 }
 
-export class RegisterDto extends LoginDto {
+export class RegisterDto extends AuthDto {
   @ApiProperty({
     description: 'User username',
     example: 'johndoe',
@@ -32,8 +33,26 @@ export class RegisterDto extends LoginDto {
 
 export class AuthResponseDto {
   @ApiProperty({
+    description: 'User',
+    example: {
+      id: '1',
+      username: 'johndoe',
+      email: 'john.doe@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+  })
+  user: UserResponseDto;
+
+  @ApiProperty({
     description: 'JWT access token',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
-  access_token: string;
+  accessToken: string;
+
+  @ApiProperty({
+    description: 'JWT refresh token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refreshToken: string;
 }

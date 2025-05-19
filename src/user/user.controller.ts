@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +22,8 @@ import {
 } from './user.swagger';
 import { CreateUserSwagger } from './user.swagger';
 import { UserFilterDto } from './dto/user-filter.dto';
-
+import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
+@UseGuards(AccessTokenGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -41,19 +43,19 @@ export class UserController {
   @Get(':id')
   @GetUserByIdSwagger()
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findUserById(id);
   }
 
   @Get('email/:email')
   @GetUserByEmailSwagger()
   findOneByEmail(@Param('email') email: string) {
-    return this.userService.findOneByEmail(email);
+    return this.userService.findUserByEmail(email);
   }
 
   @Get('username/:username')
   @GetUserByUsernameSwagger()
   findOneByUsername(@Param('username') username: string) {
-    return this.userService.findOneByUsername(username);
+    return this.userService.findUserByUsername(username);
   }
 
   @Patch(':id')

@@ -38,7 +38,7 @@ export class User extends BaseEntityWithSoftDelete {
   }
 
   private hashPassword() {
-    const salt = process.env.SALT_KEY || 10;
+    const salt = parseInt(process.env.SALT_ROUNDS as string) || 10;
     this.password = bcrypt.hashSync(this.password, salt);
   }
 

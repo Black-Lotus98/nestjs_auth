@@ -24,6 +24,7 @@ export class UserService {
     total: number;
     page: number;
     limit: number;
+    totalPages: number;
   }> {
     const { page, limit, sort, sortBy, ...filterData } = filter;
     const skip = (page - 1) * limit;
@@ -54,10 +55,11 @@ export class UserService {
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
-  async findOne(id: string): Promise<UserResponse> {
+  async findUserById(id: string): Promise<UserResponse> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -65,7 +67,7 @@ export class UserService {
     return user;
   }
 
-  async findOneByEmail(email: string): Promise<any> {
+  async findUserByEmail(email: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -73,7 +75,7 @@ export class UserService {
     return user;
   }
 
-  async findOneByUsername(username: string): Promise<any> {
+  async findUserByUsername(username: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { username } });
     if (!user) {
       throw new NotFoundException('User not found');
