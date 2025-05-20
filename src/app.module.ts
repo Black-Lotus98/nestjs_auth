@@ -6,11 +6,15 @@ import { DbModule } from './db/db.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { RedisModule } from './redis/redis.module';
+
 @Module({
   imports: [
     AuthModule,
     UserModule,
     DbModule,
+    RedisModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
@@ -19,10 +23,13 @@ import { JwtModule } from '@nestjs/jwt';
       inject: [ConfigService],
       global: true,
     }),
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      global: true,
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

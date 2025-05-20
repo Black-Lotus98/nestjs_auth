@@ -23,7 +23,9 @@ import {
 import { CreateUserSwagger } from './user.swagger';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
-@UseGuards(AccessTokenGuard)
+import { JwtGuard } from 'src/common/guards/jwt.guard';
+// @UseGuards(AccessTokenGuard)
+@UseGuards(JwtGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
