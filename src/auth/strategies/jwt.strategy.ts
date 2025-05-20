@@ -1,35 +1,23 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-jwt';
-import { ExtractJwt } from 'passport-jwt';
-import { AuthService } from '../auth.service';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from '../../user/user.service';
-import { TokenBlacklistService } from '../token-blacklist.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
-    private readonly userService: UserService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
-  ) {
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(private userService: UserService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.accessToken;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET as string,
-      passReqToCallback: true,
     });
   }
 
-  async validate(
-    request: any,
-    payload: { sub: string; email: string; username: string },
-  ) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-
-    if (await this.tokenBlacklistService.isTokenBlacklisted(token as string)) {
-      throw new UnauthorizedException('Token has been revoked');
-    }
-
+  async validate(payload: any) {
     const user = await this.userService.findUserById(payload.sub);
     if (!user) {
       throw new UnauthorizedException();

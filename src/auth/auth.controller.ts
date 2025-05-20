@@ -5,16 +5,18 @@ import {
   UseGuards,
   Req,
   Get,
-  Headers,
+  Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto, RefreshTokenDto } from './dto/auth.dto';
+import { AuthDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/common/guards/jwt.guard';
 import { LocalGuard } from 'src/common/guards/local.guard';
 import { ApiLogin, ApiLogout, ApiGetUserInfo } from './auth.swager';
+import { Response } from 'express';
+import { Cookies } from 'src/common/decorators/cookies.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -25,20 +27,24 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalGuard)
   @ApiLogin()
-  async login(@Body() authDto: AuthDto) {
-    return await this.authService.login(authDto);
+  async login(
+    @Body() authDto: AuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.authService.login(authDto, res);
   }
 
   @Post('refresh')
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Cookies('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 
   @Post('logout')
   @UseGuards(JwtGuard)
   @ApiLogout()
-  async logout(@Req() request) {
-    return this.authService.logout(request);
+  logout(@Res({ passthrough: true }) res: Response) {
+    return this.authService.logout(res);
   }
 
   @Get('me')

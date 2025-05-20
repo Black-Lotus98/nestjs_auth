@@ -1,108 +1,115 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import * as bcrypt from 'bcrypt';
-import { AuthDto, AuthResponseDto, RefreshTokenDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { AuthDto, AuthResponseDto } from './dto/auth.dto';
+import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 import { plainToInstance } from 'class-transformer';
-import { User } from 'src/user/entities/user.entity';
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
-import { ConfigService } from '@nestjs/config';
-import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
+    private usersService: UserService,
+    private jwtService: JwtService,
   ) {}
-  async login(authDto: AuthDto): Promise<AuthResponseDto> {
-    const user = await this.validateUser(authDto);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
 
-    return this.generateTokens(user);
-  }
-
-  async validateUser(authDto: AuthDto): Promise<UserResponseDto | null> {
-    const user = await this.userService.findUserByEmail(authDto.email);
-
-    if (user && (await bcrypt.compare(authDto.password, user.password))) {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto | null> {
+    const user = await this.usersService.findUserByEmail(email);
+    if (user && (await bcrypt.compare(password, user.password))) {
       return plainToInstance(UserResponseDto, user, {
         excludeExtraneousValues: true,
       });
     }
-
     return null;
   }
 
-  async generateTokens(user: UserResponseDto): Promise<AuthResponseDto> {
-    const tokenPayload = {
-      sub: user.id,
-      email: user.email,
-      username: user.username,
-    };
+  async login(authDto: AuthDto, res: Response): Promise<AuthResponseDto> {
+    const user = await this.validateUser(authDto.email, authDto.password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-    const accessToken = await this.jwtService.signAsync(tokenPayload, {
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRATION_TIME'),
-      secret: this.configService.get('JWT_SECRET'),
+    const payload = { email: user.email, sub: user.id };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
     });
-    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION_TIME'),
-      secret: this.configService.get('JWT_REFRESH_SECRET'),
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
     });
+
+    // Set access token in HTTP-only cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    // Set refresh token in HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       user,
-      accessToken,
-      refreshToken,
     };
   }
 
-  async refreshToken(
-    refreshTokenDto: RefreshTokenDto,
-  ): Promise<AuthResponseDto> {
+  async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
-      const payload = await this.jwtService.verifyAsync(
-        refreshTokenDto.refreshToken,
-        {
-          secret: this.configService.get('JWT_REFRESH_SECRET'),
-        },
-      );
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
 
-      const user = await this.userService.findUserById(payload.sub);
+      const user = await this.usersService.findUserById(payload.sub);
       if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException('User not found');
       }
 
-      return this.generateTokens(
-        plainToInstance(UserResponseDto, user, {
-          excludeExtraneousValues: true,
-        }),
-      );
+      const userDto = plainToInstance(UserResponseDto, user, {
+        excludeExtraneousValues: true,
+      });
+
+      const newPayload = { email: user.email, sub: user.id };
+      const newAccessToken = this.jwtService.sign(newPayload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+
+      return {
+        user: userDto,
+      };
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-  async logout(request): Promise<{ message: string }> {
-    try {
-      const token = request.headers.authorization?.replace('Bearer ', '');
-      if (!token) {
-        throw new UnauthorizedException('No token provided');
-      }
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
+  logout(res: Response) {
+    // Clear both tokens
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
 
-      const expiresIn = payload.exp - Math.floor(Date.now() / 1000);
-      if (expiresIn > 0) {
-        await this.tokenBlacklistService.addToBlacklist(token, expiresIn);
-      }
-      return { message: 'Logged out successfully' };
-    } catch (error) {
-      throw new UnauthorizedException('Invalid token');
-    }
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return {
+      message: 'Logged out successfully',
+    };
   }
 }
