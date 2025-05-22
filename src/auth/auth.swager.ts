@@ -4,6 +4,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 
 export function ApiAuth() {
@@ -64,6 +65,14 @@ export function ApiLogout() {
   return applyDecorators(
     ApiBearerAuth('JWT-auth'),
     ApiOperation({ summary: 'User logout' }),
+    ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          refreshToken: { type: 'string' },
+        },
+      },
+    }),
     ApiResponse({ status: 200, description: 'Logout successful' }),
     ApiResponse({ status: 401, description: 'Unauthorized' }),
   );

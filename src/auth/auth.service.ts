@@ -63,6 +63,16 @@ export class AuthService {
   async refreshToken(
     refreshTokenDto: RefreshTokenDto,
   ): Promise<AuthResponseDto> {
+    if (!refreshTokenDto.refreshToken) {
+      throw new UnauthorizedException('No refresh token provided');
+    }
+    if (
+      await this.tokenBlacklistService.isTokenBlacklisted(
+        refreshTokenDto.refreshToken,
+      )
+    ) {
+      throw new UnauthorizedException('Refresh token is blacklisted');
+    }
     try {
       const payload = await this.jwtService.verifyAsync(
         refreshTokenDto.refreshToken,
@@ -86,19 +96,37 @@ export class AuthService {
     }
   }
 
-  async logout(request): Promise<{ message: string }> {
+  async logout(
+    request,
+    body: { refreshToken: string },
+  ): Promise<{ message: string }> {
     try {
       const token = request.headers.authorization?.replace('Bearer ', '');
+      const refreshToken = body.refreshToken;
       if (!token) {
-        throw new UnauthorizedException('No token provided');
+        throw new UnauthorizedException('No access token provided');
+      }
+      if (!refreshToken) {
+        throw new UnauthorizedException('No refresh token provided');
       }
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_SECRET'),
+      });
+      const refreshPayload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
 
       const expiresIn = payload.exp - Math.floor(Date.now() / 1000);
       if (expiresIn > 0) {
         await this.tokenBlacklistService.addToBlacklist(token, expiresIn);
+      }
+      const refreshExpiresIn =
+        refreshPayload.exp - Math.floor(Date.now() / 1000);
+      if (refreshExpiresIn > 0) {
+        await this.tokenBlacklistService.addToBlacklist(
+          refreshToken,
+          refreshExpiresIn,
+        );
       }
       return { message: 'Logged out successfully' };
     } catch (error) {
