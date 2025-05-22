@@ -1,4 +1,7 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { PermissionResponseDto } from 'src/permissions/dto/permission-response.dto';
+import { RoleResponseDto } from 'src/roles/dto/roles-response.dto';
+
 @Exclude()
 export class UserResponseDto {
   @Expose()
@@ -30,6 +33,14 @@ export class UserResponseDto {
 
   @Expose()
   updatedAt: Date;
+
+  @Expose()
+  @Type(() => RoleResponseDto)
+  roles: RoleResponseDto[];
+
+  @Expose()
+  @Type(() => PermissionResponseDto)
+  permissions: PermissionResponseDto[];
 
   password: string;
 

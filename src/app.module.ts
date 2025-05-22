@@ -8,11 +8,14 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { RedisModule } from './redis/redis.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
+    RolesModule,
     DbModule,
     RedisModule,
     JwtModule.registerAsync({
@@ -30,6 +33,8 @@ import { RedisModule } from './redis/redis.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RolesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

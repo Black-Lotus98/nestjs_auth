@@ -1,7 +1,9 @@
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity, ManyToMany, JoinTable } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/roles/entities/role.entity';
+import { Permission } from 'src/permissions/entities/permissions.entity';
 
 @Entity()
 export class User extends BaseEntityWithSoftDelete {
@@ -29,6 +31,14 @@ export class User extends BaseEntityWithSoftDelete {
   @Exclude()
   @Column()
   password: string;
+
+  @ManyToMany(() => Role)
+  @JoinTable()
+  roles: Role[];
+
+  @ManyToMany(() => Permission)
+  @JoinTable()
+  permissions: Permission[];
 
   @BeforeInsert()
   prepareUser() {

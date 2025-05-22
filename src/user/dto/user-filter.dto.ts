@@ -54,4 +54,22 @@ export class UserFilterDto extends FilterDto {
   @IsOptional()
   @IsNotEmpty()
   phone: string;
+
+  @ApiPropertyOptional({
+    description: 'User role',
+    example: 'admin',
+  })
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  role: string;
+
+  @ApiPropertyOptional({
+    description: 'User permission',
+    example: 'admin',
+  })
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  permission: string;
 }

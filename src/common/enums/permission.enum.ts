@@ -1,6 +1,6 @@
 export enum Permission {
-  'user:create',
-  'user:read',
-  'user:update',
-  'user:delete',
+  USER_CREATE = 'UC',
+  USER_READ = 'UR',
+  USER_UPDATE = 'UU',
+  USER_DELETE = 'UD',
 }

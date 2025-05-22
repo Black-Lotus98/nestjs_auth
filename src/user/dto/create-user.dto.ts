@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
 
@@ -67,4 +73,26 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   profilePicture: string;
+
+  @ApiProperty({
+    description: 'The roles assigned to the user',
+    example: ['admin', 'user'],
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @IsUUID('4', { each: true })
+  roleIds?: string[];
+
+  @ApiProperty({
+    description: 'The direct permissions assigned to the user',
+    example: ['user:create', 'user:read'],
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @IsUUID('4', { each: true })
+  permissionIds?: string[];
 }
