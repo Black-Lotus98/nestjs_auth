@@ -10,14 +10,18 @@ import { PassportModule } from '@nestjs/passport';
 import { RedisModule } from './redis/redis.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { DriversModule } from './drivers/drivers.module';
+import { EmploymentsModule } from './employments/employments.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
     RolesModule,
-    DbModule,
+    PermissionsModule,
+    DriversModule,
     RedisModule,
+    DbModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
@@ -33,8 +37,7 @@ import { PermissionsModule } from './permissions/permissions.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    RolesModule,
-    PermissionsModule,
+    EmploymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
