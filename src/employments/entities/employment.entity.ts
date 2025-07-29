@@ -1,15 +1,15 @@
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
-import { Column, PrimaryColumn, ManyToOne, Entity, JoinColumn } from 'typeorm';
-import { Driver } from 'src/drivers/entities/driver.entity';
+import { Column, ManyToOne, Entity, JoinColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Employment extends BaseEntityWithSoftDelete {
-  @PrimaryColumn()
-  employeeId: string;
+  @Column({ nullable: false })
+  userId: string;
 
-  @ManyToOne(() => Driver, (driver) => driver.employments)
-  @JoinColumn({ name: 'employeeId', referencedColumnName: 'id' })
-  driver: Driver;
+  @ManyToOne(() => User, (user) => user.employments, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column({ type: 'date' })
   startDate: Date;

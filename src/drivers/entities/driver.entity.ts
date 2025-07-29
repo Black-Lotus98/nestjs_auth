@@ -1,36 +1,22 @@
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
-import { Column, Entity, OneToMany, Unique } from 'typeorm';
-import { Employment } from 'src/employments/entities/employment.entity';
+import { Column, Entity, JoinColumn, OneToOne, OneToMany } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { TailingRecord } from 'src/tailing-records/entities/tailing-record.entity';
 
 @Entity()
 export class Driver extends BaseEntityWithSoftDelete {
-  @Column()
-  @Unique(['nationalId'])
-  nationalId: string;
+  @Column({ nullable: false })
+  userId: string;
 
-  @Column()
-  firstName: string;
-
-  @Column({ nullable: true })
-  middleName: string;
-
-  @Column()
-  lastName: string;
-
-  @Column()
-  arabicName: string;
-
-  @Column({ type: 'date', nullable: true })
-  dateOfBirth: Date;
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column({ nullable: true })
   driverCode: string;
 
   @Column({ nullable: true })
   status: string;
-
-  @Column({ nullable: true })
-  phoneNumber: string;
 
   @Column({ nullable: true })
   truckExperience: string;
@@ -41,11 +27,6 @@ export class Driver extends BaseEntityWithSoftDelete {
   @Column({ nullable: true })
   driverPhoto: string;
 
-  @Column({ nullable: true })
-  driverLicense: string;
-
-  @OneToMany(() => Employment, (employment) => employment.driver, {
-    cascade: true,
-  })
-  employments: Employment[];
+  @OneToMany(() => TailingRecord, (tailingRecord) => tailingRecord.driver)
+  tailingRecords: TailingRecord[];
 }

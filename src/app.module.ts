@@ -13,6 +13,11 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { DriversModule } from './drivers/drivers.module';
 import { EmploymentsModule } from './employments/employments.module';
 import { PhonesModule } from './phones/phones.module';
+import { DocumentTypesModule } from './document-types/document-types.module';
+import { DocumentsModule } from './documents/documents.module';
+import { InspectionDetailsModule } from './inspection-details/inspection-details.module';
+import { TailingRecordsModule } from './tailing-records/tailing-records.module';
+import { TailingGradesModule } from './tailing-grades/tailing-grades.module';
 import { SeederModule } from './database/seeds/seeder.module';
 
 @Module({
@@ -25,6 +30,11 @@ import { SeederModule } from './database/seeds/seeder.module';
     PermissionsModule,
     RedisModule,
     DbModule,
+    DocumentTypesModule,
+    DocumentsModule,
+    InspectionDetailsModule,
+    TailingRecordsModule,
+    TailingGradesModule,
     SeederModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({

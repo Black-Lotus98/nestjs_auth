@@ -42,7 +42,12 @@ export class AuthService {
     const tokenPayload = {
       sub: user.id,
       email: user.email,
-      roles: user.roles,
+      roles: user.roles.map((role) => {
+        return {
+          name: role.name,
+          permissions: role.permissions.map((permission) => permission.code),
+        };
+      }),
       permissions: user.permissions,
     };
 

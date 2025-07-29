@@ -1,24 +1,21 @@
-import { Exclude, Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class EmploymentResponseDto {
-  @Expose()
+  @ApiProperty({ description: 'The employment ID' })
   id: string;
 
-  @Expose()
-  driverId: string;
+  @ApiProperty({ description: 'The user ID' })
+  userId: string;
 
-  @Expose()
+  @ApiProperty({ description: 'Employment start date' })
   startDate: Date;
 
-  @Expose()
+  @ApiProperty({ description: 'Employment end date' })
   endDate: Date;
 
-  @Expose()
+  @ApiProperty({ description: 'Creation date' })
   createdAt: Date;
 
-  @Expose()
+  @ApiProperty({ description: 'Last update date' })
   updatedAt: Date;
-
-  @Exclude()
-  deletedAt: Date;
 }

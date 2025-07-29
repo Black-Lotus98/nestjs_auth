@@ -117,24 +117,3 @@ export function DeleteDriverSwagger() {
     ApiBearerAuth('JWT-auth'),
   );
 }
-
-export function GetDriverByNationalIdSwagger() {
-  return applyDecorators(
-    ApiOperation({
-      summary: 'Get driver by national ID',
-      description: 'Retrieve a driver by their national ID.',
-    }),
-    ApiResponse({
-      status: 200,
-      description: 'Driver found',
-      type: [DriverResponseDto],
-    }),
-    ApiNotFoundResponse({ description: 'Driver not found' }),
-    ApiParam({
-      name: 'nationalId',
-      type: 'string',
-      description: 'Driver national ID',
-    }),
-    ApiBearerAuth('JWT-auth'),
-  );
-}

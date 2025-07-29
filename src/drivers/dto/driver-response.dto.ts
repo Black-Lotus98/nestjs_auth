@@ -1,60 +1,30 @@
-import { IsNotEmpty, IsString, IsOptional, IsDate } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
-import { EmploymentResponseDto } from 'src/employments/dto/employment-response.dto';
 
 export class DriverResponseDto {
-  @Expose()
+  @ApiProperty({ description: 'The driver ID' })
   id: string;
 
-  @Expose()
-  nationalId: string;
+  @ApiProperty({ description: 'The user ID' })
+  userId: string;
 
-  @Expose()
-  firstName: string;
-
-  @Expose()
-  middleName: string;
-
-  @Expose()
-  lastName: string;
-
-  @Expose()
-  arabicName: string;
-
-  @Expose()
-  dateOfBirth: Date;
-
-  @Expose()
+  @ApiProperty({ description: 'The driver code' })
   driverCode: string;
 
-  @Expose()
+  @ApiProperty({ description: 'The driver status' })
   status: string;
 
-  @Expose()
-  phoneNumber: string;
-
-  @Expose()
+  @ApiProperty({ description: 'Truck experience' })
   truckExperience: string;
 
-  @Expose()
+  @ApiProperty({ description: 'Tankers experience' })
   tankersExperience: string;
 
-  @Expose()
+  @ApiProperty({ description: 'Driver photo URL' })
   driverPhoto: string;
 
-  @Expose()
-  driverLicense: string;
-
-  @Expose()
-  employments: EmploymentResponseDto[];
-
-  @Expose()
+  @ApiProperty({ description: 'Creation date' })
   createdAt: Date;
 
-  @Expose()
+  @ApiProperty({ description: 'Last update date' })
   updatedAt: Date;
-
-  @Exclude()
-  deletedAt: Date;
 }

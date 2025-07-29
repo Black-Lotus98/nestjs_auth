@@ -35,6 +35,8 @@ export class EmploymentsService {
   }
 
   async findByEmployeeId(employeeId: string) {
-    return await this.employmentRepository.find({ where: { employeeId } });
+    return await this.employmentRepository.find({
+      where: { userId: employeeId },
+    });
   }
 }

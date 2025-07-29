@@ -5,6 +5,7 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
@@ -12,6 +13,9 @@ import * as bcrypt from 'bcrypt';
 import { Role } from 'src/roles/entities/role.entity';
 import { Permission } from 'src/permissions/entities/permissions.entity';
 import { Phone } from 'src/phones/entities/phone.entity';
+import { Driver } from 'src/drivers/entities/driver.entity';
+import { Employment } from 'src/employments/entities/employment.entity';
+import { Document } from 'src/documents/entities/document.entity';
 
 @Entity()
 export class User extends BaseEntityWithSoftDelete {
@@ -56,6 +60,21 @@ export class User extends BaseEntityWithSoftDelete {
 
   @OneToMany(() => Phone, (phone) => phone.user)
   phones: Phone[];
+
+  @OneToMany(() => Employment, (employment) => employment.user, {
+    cascade: true,
+  })
+  employments: Employment[];
+
+  @OneToMany(() => Document, (document) => document.user, {
+    cascade: true,
+  })
+  documents: Document[];
+
+  @OneToOne(() => Driver, (driver) => driver.user, {
+    cascade: true,
+  })
+  driver: Driver;
 
   @BeforeInsert()
   prepareUser() {

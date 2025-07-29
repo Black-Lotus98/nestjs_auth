@@ -66,8 +66,12 @@ export class UserService {
     const query = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('roles.permissions', 'roles_permissions')
       .leftJoinAndSelect('user.permissions', 'permissions')
-      .leftJoinAndSelect('user.phones', 'phones');
+      .leftJoinAndSelect('user.phones', 'phones')
+      .leftJoinAndSelect('user.employments', 'employments')
+      .leftJoinAndSelect('user.documents', 'documents')
+      .leftJoinAndSelect('user.driver', 'driver');
 
     Object.keys(filterData).forEach((key) => {
       if (filterData[key]) {
@@ -109,7 +113,15 @@ export class UserService {
   async findUserById(id: string): Promise<UserResponse> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['roles', 'permissions', 'phones'],
+      relations: [
+        'roles',
+        'roles.permissions',
+        'permissions',
+        'phones',
+        'employments',
+        'documents',
+        'driver',
+      ],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -120,7 +132,15 @@ export class UserService {
   async findUserByEmail(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['roles', 'permissions', 'phones'],
+      relations: [
+        'roles',
+        'roles.permissions',
+        'permissions',
+        'phones',
+        'employments',
+        'documents',
+        'driver',
+      ],
     });
     if (!user) {
       throw new NotFoundException('User not found');

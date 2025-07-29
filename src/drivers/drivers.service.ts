@@ -7,31 +7,17 @@ import { Repository } from 'typeorm';
 import { DriverFilterDto } from './dto/driver-filter.dto';
 import { DriverResponseDto } from './dto/driver-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { EmploymentsService } from 'src/employments/employments.service';
-import { CreateEmploymentDto } from 'src/employments/dto/create-employment.dto';
-import { EmploymentResponseDto } from 'src/employments/dto/employment-response.dto';
+
 @Injectable()
 export class DriversService {
   constructor(
     @InjectRepository(Driver)
     private driverRepository: Repository<Driver>,
-    private employmentsService: EmploymentsService,
   ) {}
 
   async create(createDriverDto: CreateDriverDto) {
     const driver = this.driverRepository.create(createDriverDto);
     const savedDriver = await this.driverRepository.save(driver);
-
-    if (createDriverDto.employments?.length) {
-      const employments = createDriverDto.employments.map((employment) => ({
-        ...employment,
-        driverId: savedDriver.id,
-      }));
-      await this.employmentsService.create(
-        employments as unknown as CreateEmploymentDto,
-      );
-    }
-
     return savedDriver;
   }
 
@@ -43,15 +29,11 @@ export class DriversService {
     totalPages: number;
   }> {
     const { page, limit, sort, sortBy, ...filterData } = filter;
-    // const drivers1 = await this.driverRepository.find({
-    //   relations: ['employments'],
-    // });
-    const query = this.driverRepository.createQueryBuilder('driver');
-    query.leftJoinAndSelect('driver.employments', 'employments');
-
-    if (sort && sortBy) {
-      query.orderBy(`driver.${sortBy}`, sort);
-    }
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const query = this.driverRepository
+      .createQueryBuilder('driver')
+      .leftJoinAndSelect('driver.user', 'user');
 
     Object.keys(filterData).forEach((key) => {
       if (filterData[key]) {
@@ -61,28 +43,22 @@ export class DriversService {
       }
     });
 
-    if (page && limit) {
-      query.skip((page - 1) * limit);
-      query.take(limit);
+    const [drivers, total] = await query
+      .skip(skip)
+      .take(take)
+      .orderBy(`driver.${sortBy}`, sort)
+      .getManyAndCount();
+
+    if (drivers.length === 0) {
+      throw new NotFoundException('No drivers found');
     }
 
-    const [drivers, total] = await query.getManyAndCount();
     const totalPages = Math.ceil(total / limit);
     return {
       data: drivers.map((driver) =>
-        plainToInstance(
-          DriverResponseDto,
-          {
-            ...driver,
-            employments: (driver.employments ?? []).map((employment) =>
-              plainToInstance(EmploymentResponseDto, {
-                ...employment,
-                driver: undefined,
-              }),
-            ),
-          },
-          { excludeExtraneousValues: true },
-        ),
+        plainToInstance(DriverResponseDto, driver, {
+          excludeExtraneousValues: true,
+        }),
       ),
       total,
       page,
@@ -94,82 +70,40 @@ export class DriversService {
   async findOne(id: string) {
     const driver = await this.driverRepository.findOne({
       where: { id },
-      relations: ['employments'],
+      relations: ['user'],
     });
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }
-    return plainToInstance(
-      DriverResponseDto,
-      {
-        ...driver,
-        employments: (driver?.employments ?? []).map((employment) =>
-          plainToInstance(EmploymentResponseDto, {
-            ...employment,
-            driver: undefined,
-          }),
-        ),
-      },
-      { excludeExtraneousValues: true },
-    );
+    return plainToInstance(DriverResponseDto, driver, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async update(id: string, updateDriverDto: UpdateDriverDto) {
     const driver = await this.driverRepository.findOne({
       where: { id },
-      relations: ['employments'],
+      relations: ['user'],
     });
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }
 
-    if (updateDriverDto.employments?.length) {
-      const employments = updateDriverDto.employments.map((employment) => ({
-        ...employment,
-        driverId: driver?.id,
-      }));
-      await this.employmentsService.create(
-        employments as unknown as CreateEmploymentDto,
-      );
-    }
+    Object.assign(driver, updateDriverDto);
+    const updatedDriver = await this.driverRepository.save(driver);
 
-    return this.findOne(id);
+    return plainToInstance(DriverResponseDto, updatedDriver, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async remove(id: string) {
     const driver = await this.driverRepository.findOne({
       where: { id },
-      relations: ['employments'],
     });
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }
     return await this.driverRepository.softDelete(id);
-  }
-
-  async findByNationalId(nationalId: string) {
-    const driver = await this.driverRepository.findOne({
-      where: { nationalId },
-      select: {
-        id: true,
-        nationalId: true,
-      },
-    });
-    if (!driver) {
-      throw new NotFoundException('Driver not found');
-    }
-    return plainToInstance(
-      DriverResponseDto,
-      {
-        ...driver,
-        employments: (driver?.employments ?? []).map((employment) =>
-          plainToInstance(EmploymentResponseDto, {
-            ...employment,
-            driver: undefined,
-          }),
-        ),
-      },
-      { excludeExtraneousValues: true },
-    );
   }
 }

@@ -5,6 +5,8 @@ import { Phone } from './entities/phone.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { PhonesFilterDto } from './dto/phones-filter.dto';
+import { SortEnum } from 'src/common/enums/sort.enum';
 
 @Injectable()
 export class PhonesService {
@@ -31,10 +33,52 @@ export class PhonesService {
     return await this.phonesRepository.save(phone);
   }
 
-  async findAll() {
-    return await this.phonesRepository.find({
-      relations: ['user'],
-    });
+  async findAll(filter: PhonesFilterDto) {
+    const { page, limit, sort, sortBy, ...rest } = filter;
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const query = this.phonesRepository.createQueryBuilder('phone');
+    query.leftJoinAndSelect('phone.user', 'user');
+
+    if (rest.phoneNumber) {
+      query.andWhere('phone.phoneNumber = :phoneNumber', {
+        phoneNumber: rest.phoneNumber,
+      });
+    }
+
+    if (rest.phoneType) {
+      query.andWhere('phone.phoneType = :phoneType', {
+        phoneType: rest.phoneType,
+      });
+    }
+
+    if (rest.isPrimary) {
+      query.andWhere('phone.isPrimary = :isPrimary', {
+        isPrimary: rest.isPrimary,
+      });
+    }
+
+    if (rest.userId) {
+      query.andWhere('phone.user_id = :userId', {
+        userId: rest.userId,
+      });
+    }
+
+    const [phones, total] = await query.skip(skip).take(take).getManyAndCount();
+
+    if (sort === SortEnum.ASC) {
+      phones.sort((a, b) => a[sortBy] - b[sortBy]);
+    } else {
+      phones.sort((a, b) => b[sortBy] - a[sortBy]);
+    }
+
+    return {
+      data: phones,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {
