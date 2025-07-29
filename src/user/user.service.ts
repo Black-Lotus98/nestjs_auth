@@ -19,7 +19,7 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { roleIds, permissionIds, ...userData } = createUserDto;
+    const { roleIds, permissionIds, phones, ...userData } = createUserDto;
     const user = this.userRepository.create(userData);
     const savedUser = await this.userRepository.save(user);
 
@@ -66,7 +66,8 @@ export class UserService {
     const query = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'roles')
-      .leftJoinAndSelect('user.permissions', 'permissions');
+      .leftJoinAndSelect('user.permissions', 'permissions')
+      .leftJoinAndSelect('user.phones', 'phones');
 
     Object.keys(filterData).forEach((key) => {
       if (filterData[key]) {
@@ -108,7 +109,7 @@ export class UserService {
   async findUserById(id: string): Promise<UserResponse> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['roles', 'permissions'],
+      relations: ['roles', 'permissions', 'phones'],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -119,18 +120,7 @@ export class UserService {
   async findUserByEmail(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['roles', 'permissions'],
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
-  async findUserByUsername(username: string): Promise<any> {
-    const user = await this.userRepository.findOne({
-      where: { username },
-      relations: ['roles', 'permissions'],
+      relations: ['roles', 'permissions', 'phones'],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -142,7 +132,7 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponse> {
-    const { roleIds, permissionIds, ...userData } = updateUserDto;
+    const { roleIds, permissionIds, phones, ...userData } = updateUserDto;
     const user = await this.userRepository.save({ ...userData, id });
 
     if (roleIds) {

@@ -1,9 +1,17 @@
-import { BeforeInsert, Column, Entity, ManyToMany, JoinTable } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/roles/entities/role.entity';
 import { Permission } from 'src/permissions/entities/permissions.entity';
+import { Phone } from 'src/phones/entities/phone.entity';
 
 @Entity()
 export class User extends BaseEntityWithSoftDelete {
@@ -11,19 +19,25 @@ export class User extends BaseEntityWithSoftDelete {
   firstName: string;
 
   @Column({ nullable: false })
+  middleName: string;
+
+  @Column({ nullable: false })
   lastName: string;
 
-  @Column({ nullable: true })
-  username: string;
+  @Column({ nullable: false })
+  arabicFirstName: string;
 
-  @Column({ unique: true, nullable: false })
+  @Column({ nullable: false })
+  arabicMiddleName: string;
+
+  @Column({ nullable: false })
+  arabicLastName: string;
+
+  @Column({ nullable: false, unique: true })
   email: string;
 
   @Column({ nullable: true })
-  phone: string;
-
-  @Column({ nullable: true })
-  address: string;
+  dob: Date;
 
   @Column()
   profilePicture: string;
@@ -33,29 +47,25 @@ export class User extends BaseEntityWithSoftDelete {
   password: string;
 
   @ManyToMany(() => Role)
-  @JoinTable()
+  @JoinTable({ name: 'user_roles' })
   roles: Role[];
 
   @ManyToMany(() => Permission)
-  @JoinTable()
+  @JoinTable({ name: 'user_permissions' })
   permissions: Permission[];
+
+  @OneToMany(() => Phone, (phone) => phone.user)
+  phones: Phone[];
 
   @BeforeInsert()
   prepareUser() {
     this.hashPassword();
-    this.setUsername();
     this.setProfilePicture();
   }
 
   private hashPassword() {
     const salt = parseInt(process.env.SALT_ROUNDS as string) || 10;
     this.password = bcrypt.hashSync(this.password, salt);
-  }
-
-  private setUsername() {
-    if (!this.username) {
-      this.username = `${this.firstName.toLowerCase()}.${this.lastName.toLowerCase()}`;
-    }
   }
 
   private setProfilePicture() {

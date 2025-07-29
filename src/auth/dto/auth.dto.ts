@@ -5,7 +5,7 @@ import { UserResponseDto } from 'src/user/dto/user-response.dto';
 export class AuthDto {
   @ApiProperty({
     description: 'User email',
-    example: 'john.doe@example.com',
+    example: 'qusaifannoun@gmail.com',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -24,7 +24,7 @@ export class AuthDto {
 export class RegisterDto extends AuthDto {
   @ApiProperty({
     description: 'User username',
-    example: 'johndoe',
+    example: 'qusafannoun',
   })
   @IsString()
   @IsNotEmpty()
@@ -36,10 +36,9 @@ export class AuthResponseDto {
     description: 'User',
     example: {
       id: '1',
-      username: 'johndoe',
-      email: 'john.doe@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
+      email: 'qusaifannoun@gmail.com',
+      firstName: 'Qusai',
+      lastName: 'Fannoun',
     },
   })
   user: UserResponseDto;

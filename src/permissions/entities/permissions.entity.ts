@@ -1,6 +1,8 @@
 // permission.entity.ts
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Role } from 'src/roles/entities/role.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, Column, ManyToMany } from 'typeorm';
 
 @Entity()
 export class Permission extends BaseEntityWithSoftDelete {
@@ -9,4 +11,10 @@ export class Permission extends BaseEntityWithSoftDelete {
 
   @Column()
   code: string;
+
+  @ManyToMany(() => Role)
+  roles: Role[];
+
+  @ManyToMany(() => User)
+  users: User[];
 }

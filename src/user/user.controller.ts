@@ -59,13 +59,6 @@ export class UserController {
     return this.userService.findUserByEmail(email);
   }
 
-  @Get('username/:username')
-  @Permissions(Permission.USER_READ)
-  @GetUserByUsernameSwagger()
-  findOneByUsername(@Param('username') username: string) {
-    return this.userService.findUserByUsername(username);
-  }
-
   @Patch(':id')
   @Permissions(Permission.USER_UPDATE)
   @UpdateUserSwagger()

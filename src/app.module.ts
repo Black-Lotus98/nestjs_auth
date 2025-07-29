@@ -12,16 +12,20 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { DriversModule } from './drivers/drivers.module';
 import { EmploymentsModule } from './employments/employments.module';
+import { PhonesModule } from './phones/phones.module';
+import { SeederModule } from './database/seeds/seeder.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
+    PhonesModule,
+    DriversModule,
     RolesModule,
     PermissionsModule,
-    DriversModule,
     RedisModule,
     DbModule,
+    SeederModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),

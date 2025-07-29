@@ -8,9 +8,9 @@ export class SessionResponse {
       id: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
+      firstName: 'Qusai',
+      lastName: 'Fannoun',
+      email: 'qusaifannoun@gmail.com',
     },
   })
   user: UserResponse;

@@ -1,13 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsOptional,
   IsString,
   IsArray,
   IsUUID,
+  IsDate,
+  ValidateNested,
 } from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
+import { CreatePhoneDto } from 'src/phones/dto/create-phone.dto';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -19,6 +23,14 @@ export class CreateUserDto {
   firstName: string;
 
   @ApiProperty({
+    description: 'The middle name of the user',
+    example: 'Doe',
+  })
+  @IsString()
+  @IsOptional()
+  middleName: string;
+
+  @ApiProperty({
     description: 'The last name of the user',
     example: 'Doe',
   })
@@ -27,16 +39,41 @@ export class CreateUserDto {
   lastName: string;
 
   @ApiProperty({
-    description: 'The username of the user',
-    example: 'john.doe',
+    description: 'The arabic first name of the user',
+    example: 'John',
+  })
+  @IsString()
+  @IsNotEmpty()
+  arabicFirstName: string;
+
+  @ApiProperty({
+    description: 'The arabic middle name of the user',
+    example: 'Doe',
   })
   @IsString()
   @IsOptional()
-  username: string;
+  arabicMiddleName: string;
+
+  @ApiProperty({
+    description: 'The arabic last name of the user',
+    example: 'Doe',
+  })
+  @IsString()
+  @IsNotEmpty()
+  arabicLastName: string;
+
+  @ApiProperty({
+    description: 'The date of birth of the user',
+    example: '1990-01-01',
+    required: false,
+  })
+  @IsDate()
+  @IsOptional()
+  dob: Date;
 
   @ApiProperty({
     description: 'The email of the user',
-    example: 'john.doe@example.com',
+    example: 'qusaifannoun@gmail.com',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -51,20 +88,26 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    description: 'The phone number of the user',
-    example: '+1234567890',
+    description: 'The phone numbers of the user',
+    example: [
+      {
+        phoneNumber: '+1234567890',
+        phoneType: 'mobile',
+        isPrimary: true,
+      },
+      {
+        phoneNumber: '+1234567890',
+        phoneType: 'home',
+        isPrimary: false,
+      },
+    ],
   })
-  @IsString()
+  @IsArray()
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePhoneDto)
   @IsOptional()
-  phone: string;
-
-  @ApiProperty({
-    description: 'The address of the user',
-    example: '123 Main St, Anytown, USA',
-  })
-  @IsString()
-  @IsOptional()
-  address: string;
+  phones: CreatePhoneDto[];
 
   @ApiProperty({
     description: 'The profile picture of the user',

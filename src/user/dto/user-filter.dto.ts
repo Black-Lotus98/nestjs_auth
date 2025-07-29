@@ -29,31 +29,31 @@ export class UserFilterDto extends FilterDto {
   lastName: string;
 
   @ApiPropertyOptional({
-    description: 'User username',
-    example: 'johndoe',
+    description: 'User arabic first name',
+    example: 'John',
   })
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  username: string;
+  arabicFirstName: string;
+
+  @ApiPropertyOptional({
+    description: 'User arabic last name',
+    example: 'Doe',
+  })
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  arabicLastName: string;
 
   @ApiPropertyOptional({
     description: 'User email',
-    example: 'john.doe@example.com',
+    example: 'qusaifannoun@gmail.com',
   })
   @IsString()
   @IsOptional()
   @IsNotEmpty()
   email: string;
-
-  @ApiPropertyOptional({
-    description: 'User phone',
-    example: '+1234567890',
-  })
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  phone: string;
 
   @ApiPropertyOptional({
     description: 'User role',

@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { BaseEntityWithSoftDelete } from 'src/common/entity/base-entity';
 import { Permission } from 'src/permissions/entities/permissions.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Role extends BaseEntityWithSoftDelete {
@@ -17,6 +18,9 @@ export class Role extends BaseEntityWithSoftDelete {
   code: string;
 
   @ManyToMany(() => Permission)
-  @JoinTable()
+  @JoinTable({ name: 'role_permissions' })
   permissions: Permission[];
+
+  @ManyToMany(() => User, (user) => user.roles)
+  users: User[];
 }
